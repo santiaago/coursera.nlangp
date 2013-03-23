@@ -158,11 +158,8 @@ def get_tags_from_count_file(countfile):
             set_tags.add(tag)
     return set_tags
 
-def simple_gene_tagger():
-    countfile = 'gene.counts.with.rare'
-    genedevfile = 'gene.dev'
-    outfile = 'gene_dev.p1.out'
-    #count_f = open(countfile,'r')
+def simple_gene_tagger(countfile,genedevfile,outfile):
+
     genedev_f = open(genedevfile,'r')
     out_f = open(outfile,'w')
     set_tags =set()
@@ -175,7 +172,7 @@ def simple_gene_tagger():
     print 'start compute emission params'
     dic_e = dic_of_compute_emission_params(countfile,rare_words)
     print 'writing dictionary of emission of file dic_e'
-    f_e = open('dic_e','w')
+    f_e = open(countfile+'_dic_e','w')
     for e in dic_e:
         w,t = e
         f_e.write(w+' '+t+' : '+str(dic_e[e])+'\n')
@@ -210,6 +207,19 @@ def simple_gene_tagger():
         counter += 1
         if counter%10000 == 0:
             print 'simple_gene_tagger running: %s'%(counter)
+def gene_dev():
+    countfile = 'gene.counts.with.rare'
+    genedevfile = 'gene.dev'
+    outfile = 'gene_dev.p1.out'
+    simple_gene_tagger(countfile,genedevfile,outfile)
+    print 'end of gene_dev'
+
+def gene_test():
+    countfile = 'gene.counts.with.rare'
+    genedevfile = 'gene.test'
+    outfile = 'gene_test.p1.out'
+    simple_gene_tagger(countfile,genedevfile,outfile)
+    print 'end of gene_test'
 
 def tests():
     print 'tests'
