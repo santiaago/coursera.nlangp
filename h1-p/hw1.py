@@ -1,7 +1,46 @@
 
-def compute_emission_params():
-    print 'todo'
-
+def compute_emission_params(countfile,x,y):
+    
+    print 'compute emission params'
+    print 'count file: %s'%(countfile)
+    print 'word x: %s'%(x)
+    print 'tag y %s'%(y)
+    county = -1
+    count_y_to_x = -1
+    f = open(countfile,'r')
+    found = 0
+    for line in f:
+        split = line.split()
+        count = int(split[0])
+        token = str(split[1])
+        if token == '1-GRAM':
+            tag = str(split[2])
+            if y == tag:
+                county = count
+                found += 1
+        elif token == 'WORDTAG':
+            tag = str(split[2])
+            word = str(split[3])
+            if tag == y and word == x:
+                count_y_to_x = count
+                found += 1
+        if found == 2:
+            break
+    if county >0:
+        e = float(count_y_to_x)/float(county)
+    else:
+        print 'count y is zero'
+        e = 0
+    print 'Count(y -> x)'
+    print 'Count(%s -> %s) : %s'%(y,x,count_y_to_x)
+    print 
+    print 'Count(y)'
+    print 'Count(%s) : %s'%(y,county)
+    print 
+    print 'e(x|y)'
+    
+    print 'e(%s|%s) : %s'%(x,y,e)
+    return e
 
 def rare_words_from_count_file(filepath):
     'from a count file returns a list of words that are _RARE_'
@@ -52,6 +91,11 @@ def replace_infrequent_words():
     print '::> file path: %s'%(inputfile)
     replace_infrequent_words_in_input_file(inputfile,rare_words,inputfile_sans_rare_words)
 
+def tagger():
+    countfile = 'gene.train.with.rare'
+    genedevfile = 'gene.dev'
+    outfile = 'gene-dev.p1.out'
+
 def tests():
     rare = rare_words_from_count_file('gene.counts')
     assert('colestipol' in rare)
@@ -60,7 +104,10 @@ def tests():
     assert('This' not in rare)
     assert(',"' not in rare)
     
-    replace_infrequent_words_in_input_file('gene.train',rare,'gene.train.with.rare')
-    
+    #replace_infrequent_words_in_input_file('gene.train',rare,'gene.train.with.rare')
+    assert(compute_emission_params('gene.counts.with.rare','achieved','O')>0)
+    assert(compute_emission_params('gene.counts.with.rare','achieved','O')<6.7e-05)
+    assert(compute_emission_params('gene.counts.with.rare','achieved','O')>6.6e-05)
+    assert(compute_emission_params('gene.counts.with.rare','achieved','error')==0)
     print 'all tests passed!'
     
