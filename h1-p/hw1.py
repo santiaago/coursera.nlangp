@@ -231,10 +231,9 @@ def tests():
     assert('This' not in rare)
     assert(',"' not in rare)
     
-    #replace_infrequent_words_in_input_file('gene.train',rare,'gene.train.with.rare')
     assert(compute_emission_params('gene.counts.with.rare','achieved','O')>0)
-    assert(compute_emission_params('gene.counts.with.rare','achieved','O')<6.7e-05)
-    assert(compute_emission_params('gene.counts.with.rare','achieved','O')>6.6e-05)
+    assert(compute_emission_params('gene.counts.with.rare','achieved','O')<5.6e-05)
+    assert(compute_emission_params('gene.counts.with.rare','achieved','O')>5.5e-05)
     assert(compute_emission_params('gene.counts.with.rare','achieved','error')==0)
     print 'all tests passed!'
     
