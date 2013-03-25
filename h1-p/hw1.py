@@ -191,13 +191,38 @@ def replace_infrequent_words_in_input_file(inputfile,rare_words,inputfile_sans_r
                 outfile.write(line)                
         else:
             outfile.write(line)
+
+def replace_infrequent_words_in_input_file_ex(inputfile,rare_words,inputfile_sans_rare_words):
+    'from input file and list of rare words, create inputfile_sans_rare_words'
+    
+    infile = open(inputfile,'r')
+    outfile = open(inputfile_sans_rare_words,'w')
+    for line in infile:
+        if line != '\n':
+            split = line.split()
+            word = split[0]
+            tag = split[1]
+            if word in rare_words:
+                if isNumeric(word):
+                    word = '_NUMERIC_'
+                elif isAllCapitals(word):
+                    word = '_ALLCAPITALS_'
+                elif isLastCapital(word):
+                    word = '_LASTCAPITAL_'
+                else:
+                    word = '_RARE_'
+                outfile.write(word+' '+tag+'\n')
+            else:
+                outfile.write(line)                
+        else:
+            outfile.write(line)
                 
 def replace_infrequent_words():
 
     filepath = 'gene.counts'
     print '::> count file:'
     print '::> file path: %s'%(filepath)
-    rare_words = rare_words_from_count_file(filepath)
+    w , rare_words = rare_words_from_count_file(filepath)
     
     # create file from input file and change tags to _RARE_ for infrequent words
     inputfile = 'gene.train'
@@ -205,6 +230,20 @@ def replace_infrequent_words():
     print '::> input file:'
     print '::> file path: %s'%(inputfile)
     replace_infrequent_words_in_input_file(inputfile,rare_words,inputfile_sans_rare_words)
+
+def replace_infrequent_words_ex():
+    filepath = 'gene.counts'
+    print '::> count file:'
+    print '::> file path: %s'%(filepath)
+    w, rare_words = rare_words_from_count_file(filepath)
+    
+    # create file from input file and change tags to _RARE_ for infrequent words
+    inputfile = 'gene.train'
+    inputfile_sans_rare_words = 'gene.train.with.rare.ex'
+    print '::> input file:'
+    print '::> file path: %s'%(inputfile)
+    replace_infrequent_words_in_input_file_ex(inputfile,rare_words,inputfile_sans_rare_words)
+
 
 def get_tags_from_count_file(countfile):
     'build a set of tags from count file'
@@ -280,6 +319,18 @@ def viterbi_test():
     genetestfile = 'gene.test'
     outfile = 'gene_test.p2.out'
     viterbi(countfile,genetestfile,outfile)
+
+def viterbi_ex_dev():
+    countfile = 'gene.counts.with.rare.ex'
+    genedevfile = 'gene.dev'
+    outfile = 'gene_dev.p3.out'
+    viterbi(countfile,genedevfile,outfile)
+
+def viterbi_ex_test():
+    countfile = 'gene.counts.with.rare.ex'
+    genedevfile = 'gene.test'
+    outfile = 'gene_test.p3.out'
+    viterbi(countfile,genedevfile,outfile)
 
 def viterbi(countfile,genefile,outfile):
 
@@ -430,10 +481,6 @@ def tests():
     assert(isLastCapital('SANTIAGo')==False)
     assert(isLastCapital('SANTIAGO')==False)
     assert(isLastCapital('SAnTIAGo')==False)
-
-    
-
-
 
 
     print 'all tests passed!'
