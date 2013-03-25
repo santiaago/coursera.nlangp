@@ -153,6 +153,27 @@ def rare_words_from_count_file(filepath):
             rare_words.append(word)
     return all_words,rare_words
 
+def isNumeric(word):
+    import re
+    match = re.search(r'\d',word)
+    if match:
+        return True
+    return False
+
+def isAllCapitals(word):
+    import re
+    match = re.search(r'^[A-Z]+$',word)
+    if match:
+        return True
+    return False
+
+def isLastCapital(word):
+    import re
+    match = re.search(r'[A-Z]$',word)
+    if match and not isAllCapitals(word):
+        return True
+    return False
+
 def replace_infrequent_words_in_input_file(inputfile,rare_words,inputfile_sans_rare_words):
     'from input file and list of rare words, create inputfile_sans_rare_words'
     
@@ -388,11 +409,32 @@ def tests():
     print 'part2'
     v = False
     dic_2_gram,dic_3_gram = dic_of_compute_q_params('gene.counts')
-
-    assert(compute_q_params(dic_2_gram,dic_3_gram,'*','I-GENE','STOP',v)==1./749.)
-    assert(compute_q_params(dic_2_gram,dic_3_gram,'*','*','O',v)==0.9457089011307626)
-    assert(compute_q_params(dic_2_gram,dic_3_gram,'I-GENE','I-GENE','O',v)==9622/24435.)
+    assert(compute_q_params(dic_2_gram,dic_3_gram,'*','I-GENE','STOP',v)==log(1./749.))
+    assert(compute_q_params(dic_2_gram,dic_3_gram,'*','*','O',v)==log(0.9457089011307626))
+    assert(compute_q_params(dic_2_gram,dic_3_gram,'I-GENE','I-GENE','O',v)==log(9622/24435.))
     print 'tests of part 2 passed!'
+
+    print 'part3'
+    assert(isNumeric('world')==False)
+    assert(isNumeric('w0rld')==True)
+    assert(isNumeric('w03234rld')==True)
+    assert(isNumeric('world123')==True)
+    assert(isNumeric('e&dfgkjhfgworld')==False)
+
+    assert(isAllCapitals('SANTIAGO')==True)
+    assert(isAllCapitals('sANTIAGO')==False)
+    assert(isAllCapitals('SaNTIAGO')==False)
+    assert(isAllCapitals('SAnTIAGO')==False)
+
+    assert(isLastCapital('SAnTIAGO')==True)
+    assert(isLastCapital('SANTIAGo')==False)
+    assert(isLastCapital('SANTIAGO')==False)
+    assert(isLastCapital('SAnTIAGo')==False)
+
+    
+
+
+
 
     print 'all tests passed!'
     
