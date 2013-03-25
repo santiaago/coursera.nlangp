@@ -84,10 +84,24 @@ def dic_of_compute_emission_params(countfile,rare_words):
         count_tag = dic_count_1gram[tag]
         if(count_tag >0):
             if word in rare_words:
-                count_tag_to_rare = dic_emission[('_RARE_',tag)]
+                tagclass = getClass(word)
+                count_tag_to_rare = dic_emission[(tagclass,tag)]
                 dic_emission[(word,tag)] = float(count_tag_to_rare)/float(count_tag)
 
     return dic_emission
+
+def getClass(word):
+    if isNumeric(word):
+        return '_NUMERIC_'
+    if isAllCapitals(word):
+        return '_ALLCAPITALS_'
+    if isLastCapital(word):
+        return '_LASTCAPITAL_'
+    else:
+        return '_RARE_'
+
+def InClass(tag):
+    return tag in ['_NUMERIC_','_ALLCAPITALS_','_LASTCAPITAL_','_RARE_']
 
 def dic_of_compute_q_params(countfile):
     'q(yi|yi-2,yi-1)= c(yi-2,yi-1,yi)/c(yi-2,yi-1)'
@@ -412,11 +426,13 @@ def emission(word,t,dic_e,all_words,rare_words,verbose=False):
     else:
         if word in all_words:
             if word in rare_words:
-                e = dic_e[('_RARE_',t)]
+                tagclass = getClass(word)
+                e = dic_e[(tagclass,t)]
             else:
                 e = 0
         else:
-            e = dic_e[('_RARE_',t)]
+            tagclass = getClass(word)
+            e = dic_e[(tagclass,t)]
     if verbose:
         print 'emission of %s : %s = %s'%(word,t,str(e))
     if e == 0:
