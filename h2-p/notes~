@@ -1,0 +1,13 @@
+
+About the files:
+
+parse_train.dat:	training data set.
+parse_dev.dat:	 	development set of sentences.
+parse_dev.key:	 	correct parses.
+parse_test.dat:	 	test set of sentences.
+parse_train_vert.dat:	original training sentence with vertical markovization applied to the parse tree.
+count_cfg_freq.py:  	reads in training file and produce counts of the rules used in the corpus.
+pretty_print_tree.py	to view your tree in a more readable format.
+submit.py:		to sumbit.
+eval_parse.py:		to evaluate your parser.
+tree.example:		a simple example in json of a tree.

@@ -1,0 +1,24 @@
+
+About the files:
+
+parse_train.dat:	training data set in json format
+parse_dev.dat:	 	development set of sentences.(questions)
+parse_dev.key:	 	correct parses in json format.
+parse_test.dat:	 	test set of sentences.(questions)
+parse_train_vert.dat:	original training sentence with vertical markovization applied to the parse tree in json format.
+count_cfg_freq.py:  	reads in training file and produce counts of the rules used in the corpus.
+pretty_print_tree.py	to view your tree in a more readable format.
+submit.py:		to sumbit.
+eval_parse.py:		to evaluate your parser.
+tree.example:		a simple example in json of a tree.
+
+generated files:
+
+cfg.counts:		file with the counts of the rules in the corpus (parse_train.dat)
+			count file is in the following format:
+			NONTERMINAL:
+			# NONTERMINAL NP: indicates that the non terminal NP was used # times.
+			BINARYRULE:
+			# BINARYRULE NP DET NOUN: indicates that binary rule NP ->DET NOUN was used # times in the training data.
+			UNARYRULE:
+			# UNARYRULE NP+NOUN place: indicates that the rule NP+NOUN->place was seen # times in the training data.
