@@ -81,12 +81,6 @@ def print_dict(d):
     for k in d:
         if d[k] != 0:
             print '%s: %s'%(k,d[k])
-def print_dict_ex(d,i,j):
-    for k in d:
-        if d[k] != 0:
-            a,b,c = k
-            if a == i and b == j:
-                print '%s: %s'%(k,d[k])
 
 def convert(input):
     '''from so: 
@@ -101,24 +95,24 @@ def convert(input):
         return input
 
 def q_br(br,counts, counts_br):
-    #print 'binary rule'
+    print 'binary rule'
     #split = br.split()
     X = br[0]
-    #print X
-    #print int(counts_br[br])
-    #print int(counts[X])
-    #print int(counts_br[br])/(int(counts[X])*1.0)
-    #print '--'
+    print X
+    print int(counts_br[br])
+    print int(counts[X])
+    print int(counts_br[br])/(int(counts[X])*1.0)
+    print '--'
     return int(counts_br[br])/(int(counts[X])*1.0)
 
 def q_ur(ur,counts,counts_ur):
-    #print 'unary rule'
+    print 'unary rule'
     X = ur[0]
-    #print X
-    #print counts_ur[ur]
-    #print counts[X]
-    #print int(counts_ur[ur])/(int(counts[X])*1.0)
-    #print '--'
+    print X
+    print counts_ur[ur]
+    print counts[X]
+    print int(counts_ur[ur])/(int(counts[X])*1.0)
+    print '--'
     return int(counts_ur[ur])/(int(counts[X])*1.0)
 
 def counts_dic(countfilename):
@@ -140,7 +134,7 @@ def counts_dic(countfilename):
 def cky(sentence,nonterm_counts,bin_counts,un_counts):
     # rare words:
     rarewords = {}
-    rarewords = get_rarewords('parse_dev.key')
+    rarewords = get_rarewords('parse_train.dat')
     # initialization
 
     x = sentence.split()
@@ -150,8 +144,6 @@ def cky(sentence,nonterm_counts,bin_counts,un_counts):
     pi = {}
     n = len(x)
     for i in range(1,n+1):
-        print '------------------------------'
-        print 'word: %s'%(x[i-1])
         for X in nonterm_counts:
             key = (i,i,X)
             r = (X,x[i-1])
@@ -166,8 +158,10 @@ def cky(sentence,nonterm_counts,bin_counts,un_counts):
                 q = q_ur(r,nonterm_counts,un_counts)
             else: # rare
                 if x[i-1] in rarewords:
-                    print '%s is rare'%(x[i-1])
-                    print 'count: %s'%(rarewords[x[i-1]])
+                    if x[i-1] == 'called':
+                        print x[i-1]
+                        print rarewords[x[i-1]]
+                        raw_input()
                     print 'rule in rare'
                     r = (X, '_RARE_')
                     print 'looking for rule : %s'%str(r)
@@ -177,16 +171,13 @@ def cky(sentence,nonterm_counts,bin_counts,un_counts):
                     elif r in un_counts:
                         print 'rare rule found in un'
                         q = q_ur(r,nonterm_counts,un_counts)
-                    else:
-                        print '%s not seen before, set to 0'%(x[i-1])
+                    print 'pi(%s) : %s'%(str(key),q)
                 else:
                     print '%s not seen before, set to 0'%(x[i-1])
-                print 'pi(%s) : %s'%(str(key),q)
             pi[key] = q
     print_dict(pi)
     print 'done with initialization, press a key to continue'
     raw_input()
-    #return pi, None
     # init back pointers        
     bp = {}
     print 'start algo'
@@ -199,7 +190,6 @@ def cky(sentence,nonterm_counts,bin_counts,un_counts):
             print '\t\tcurrent i: %s'%i
             print '\t\tcurrent j: %s'%j
             print '------------------- Debug output for words %s to %s ---------------'%(i,j)
-            print '%s to %s'%(x[i-1],x[j-1])
             raw_input()
             print '\t\tstart X'
             for X in nonterm_counts:
@@ -212,11 +202,10 @@ def cky(sentence,nonterm_counts,bin_counts,un_counts):
                 if i == j-1:
                     range_set.append(i)
                 else:
-                    range_set = range(i,j)#-1)
+                    range_set = range(i,j-1)
                 print '\t\t\trange: %s'%range_set
                 for s in range_set:#range(i,j-1):
                     print '\t\t\t\tcurrent s: %s'%s
-                    print '--------------------- (%s %s) / (%s %s)--------------'%(i,s,s+1,j)
                     #raw_input()
                     bin_rules = get_binrules(X,bin_counts)
                     un_rules = get_unrules(X,un_counts)
@@ -241,18 +230,18 @@ def cky(sentence,nonterm_counts,bin_counts,un_counts):
                             print '\t\t\t\tpi(%s, %s, %s) : %s'%(s+1,j,Z,pi[(s+1,j,Z)])
                             print '\t\t\t\t\tvalue: %s'%v
                             print '\t\t\t\t\targ: %s'%str([s,r])
-                    #for r in un_rules:
-                    #    print '\t\t\t\t\tunary current rule: %s'%str(r)
-                    #    Y = r[1]
-                    #    print '\t\t\t\t\tcurrent Y: %s'%Y
-                    #    print '\t\t\t\t\tr: %s, i: %s, s: %s, j: %s'%(r,i,s,j)
-                    #    if (i,s,Y) in pi:
-                    #        v = q_ur(r,nonterm_counts,un_counts)*pi[(i,s,Y)]
-                    #        values.append(v)
-                    #        arg_values[str([s,r])] = v 
-                    #        print '\t\t\t\tpi(%s, %s, %s) : %s'%(i,s,Y,pi[(i,s,Y)])
-                    #        print '\t\t\t\t\tvalue: %s'%v
-                    #        print '\t\t\t\t\targ: %s'%str([s,r])
+                    for r in un_rules:
+                        print '\t\t\t\t\tunary current rule: %s'%str(r)
+                        Y = r[1]
+                        print '\t\t\t\t\tcurrent Y: %s'%Y
+                        print '\t\t\t\t\tr: %s, i: %s, s: %s, j: %s'%(r,i,s,j)
+                        if (i,s,Y) in pi:
+                            v = q_ur(r,nonterm_counts,un_counts)*pi[(i,s,Y)]
+                            values.append(v)
+                            arg_values[str([s,r])] = v 
+                            print '\t\t\t\tpi(%s, %s, %s) : %s'%(i,s,Y,pi[(i,s,Y)])
+                            print '\t\t\t\t\tvalue: %s'%v
+                            print '\t\t\t\t\targ: %s'%str([s,r])
                     print '\t\t\t\tend r'
                 print '\t\t\tend s'
                 if len(values) > 0:
@@ -267,7 +256,7 @@ def cky(sentence,nonterm_counts,bin_counts,un_counts):
             print '\t\tend X'
             print 'current pi'
             raw_input()
-            print_dict_ex(pi,i,j)
+            print_dict(pi)
             raw_input()
     print '\tend l'
     print print_dict(pi)
