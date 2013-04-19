@@ -1,7 +1,7 @@
 import json
 import time
 from functools import update_wrapper
-from math import log
+#from math import log
 
 rarewords = {}
 trainwords = {}
@@ -119,11 +119,11 @@ def convert(input):
 @memo
 def q_br(br):
     X = br[0]
-    return log(int(bin_counts[br])/(int(nonterm_counts[X])*1.0))
+    return float(bin_counts[br])/(float(nonterm_counts[X])*1.0)
 @memo
 def q_ur(ur):
     X = ur[0]
-    return log(int(un_counts[ur])/(int(nonterm_counts[X])*1.0))
+    return float(un_counts[ur])/(float(nonterm_counts[X])*1.0)
 
 def counts_dic(countfilename):
     counts = {}
@@ -146,63 +146,28 @@ def cky(sentence):
     pi = {}
     n = len(x)
     for i in range(1,n+1):
+        word = x[i-1]
         for X in nonterm_counts:
-            #key = (i,i,X)
-            #q = 0
-            #if (x[i-1] not in rarewords) and (x[i-1] in trainwords):
-            #    r = (X,x[i-1])
-            #    if r in bin_counts:
-            #        q = q_br(r)
-            #    elif r in un_counts:
-            #        q = q_ur(r)
-            #elif (x[i-1] in rarewords):
-            #    r = (X,x[i-1])
-            #    if r in bin_counts:
-            #        q = q_br(r)
-            #    elif r in un_counts:
-            #        q = q_ur(r)
-            #else:
-            #    r = (X,'_RARE_')
-            #    if r in bin_counts:
-            #        q = q_br(r)
-            #    elif r in un_counts:
-            #        q = q_ur(r)
+            q = 0#float('-inf')
             key = (i,i,X)
-            r = (X,x[i-1])
-            q = float('-inf')#0
-            if (x[i-1] not in trainwords):# or (x[i-1] not in (trainwords)):
-                #if x[i-1] not in trainwords:
-                r = (X, '_RARE_')
+            
+            if (word in rarewords) or (word not in trainwords):
+                r = (X,'_RARE_')
                 if r in bin_counts:
                     q = q_br(r)
                 elif r in un_counts:
                     q = q_ur(r)
-            if (x[i-1] in rarewords):# or (x[i-1] not in (trainwords)):
-                #if x[i-1] not in trainwords:
-                r = (X, '_RARE_')
+            elif ((X,word) in un_counts) or ((X,word) in bin_counts):
+                r = (X,word)
                 if r in bin_counts:
                     q = q_br(r)
                 elif r in un_counts:
                     q = q_ur(r)
-            r = (X,x[i-1])
-            if r in bin_counts:
-                q = q_br(r)
-            elif r in un_counts:
-                q = q_ur(r)
-            #else: # rare
-            #    if x[i-1] in rarewords:
-            #    #if x[i-1] not in trainwords:
-            #        r = (X, '_RARE_')
-            #        if r in bin_counts:
-            #            q = q_br(r)
-            #        elif r in un_counts:
-            #            q = q_ur(r)
             pi[key] = q
-    #print_dict(pi)
     # init back pointers        
     bp = {}
-    for l in range(1,n):#n-1):
-        for i in range(1,n-l+1):#n-l):
+    for l in range(1,n):
+        for i in range(1,n-l+1):
             j = i + l
             for X in nonterm_counts:
                 values = []
@@ -211,16 +176,16 @@ def cky(sentence):
                 if i == j-1:
                     range_set.append(i)
                 else:
-                    range_set = range(i,j)#-1)
-                for s in range_set:#range(i,j-1):
+                    range_set = range(i,j)
+                for s in range_set:
                     bin_rules = get_binrules(X)
                     un_rules = get_unrules(X)
                     for r in bin_rules:
                         Y = r[1]
                         Z = r[2]
                         if ((i,s,Y) in pi ) and ((s+1,j,Z) in pi):
-                            #v = q_br(r)*pi[(i,s,Y)]*pi[(s+1,j,Z)]
-                            v = q_br(r) + pi[(i,s,Y)] + pi[(s+1,j,Z)]
+                            v = q_br(r)*pi[(i,s,Y)]*pi[(s+1,j,Z)]
+                            #v = q_br(r) + pi[(i,s,Y)] + pi[(s+1,j,Z)]
                             values.append(v)
                             arg_values[(s,r)] = v 
                 if len(values) > 0:
@@ -230,6 +195,20 @@ def cky(sentence):
                     bp[(i,j,X)] = arg_max
             #print_dict_ex(pi,i,j)
     return pi,bp
+
+def getMax(values):
+    m = float('-inf')
+    for v in values:
+        if v >= m:
+            m = v
+    return m
+def getArgMax(values):
+    arg = None
+    m = 0
+    for v in values:
+        if values[v]>=m:
+            arg = v
+    return arg
 
 def bt(bp,i,j,symbol,x):
     '''
@@ -274,41 +253,71 @@ def part1():
     replace_infrequent_words('parse_train.dat','parse_train_srw.dat')
 
 def part2():
-    #line = 'What are geckos ?'
-    #line = 'Who called ?'
-    #line = 'How many miles is it from London , England to Plymouth , England ?'
-    #res,res1 = cky(line,nonterm_counts,bin_counts,un_counts)
-    #return res, res1
     #infile = open('parse_dev.dat','r')
     infile = open('parse_test.dat','r')
     #outfile = open('parse_dev.out','w')
     outfile = open('parse_test.p2.out','w')
     global rarewords
     global trainwords
-    rarewords,trainwords = get_rarewords('parse_dev.key')
+    rarewords,trainwords = get_rarewords('parse_train.dat')#'parse_dev.key')
     global nonterm_counts
     global bin_counts
     global un_counts
     nonterm_counts,bin_counts,un_counts = counts_dic('parse_train.counts.out')
+    # this gets up your score but agains the rules I believe ^^
+    #a,b,u = counts_dic('cfg.counts')
+    #un_counts.update(u)
     count = 0
     for line in infile:
         pi,bp = cky(line)
+        res = None
         res = bt(bp,1,len(line.split()),'SBARQ',line.split())
         outfile.write(str(res).replace("'","\"")+'\n')
         count = count + 1
         print count
     print 'finnish!'
-def back():
+
+def test_part2():
+    lines = []
+    
+    lines.append('What are geckos ?')
+    lines.append('Where is Inoco based ?')
+    lines.append('Name the first private citizen to fly in space .')
+    lines.append('How many miles is it from London , England to Plymouth , England ?')
+
+    results = []
+    results.append('''['SBARQ', ['WHNP+PRON', 'What'], ['SBARQ', ['SQ', ['VERB', 'are'], ['NP+NOUN', 'geckos']], ['.', '?']]]''')
+    results.append('''['SBARQ', ['WHADVP+ADV', 'Where'], ['SBARQ', ['SQ', ['VERB', 'is'], ['NP', ['NOUN', 'Inoco'], ['NOUN', 'based']]], ['.', '?']]]''')
+    results.append('''['SBARQ', ['SQ', ['VERB', 'Name'], ['SQ', ['NP', ['DET', 'the'], ['NP', ['ADJ', 'first'], ['NOUN', 'private']]], ['VP', ['VERB', 'citizen'], ['S+VP', ['PRT', 'to'], ['VP', ['VERB', 'fly'], ['PP', ['ADP', 'in'], ['NP+NOUN', 'space']]]]]]], ['.', '.']]''')
+    results.append('''['SBARQ', ['WHNP', ['WHADJP', ['ADV', 'How'], ['ADJ', 'many']], ['NOUN', 'miles']], ['SBARQ', ['SQ', ['VERB', 'is'], ['SQ', ['NP+PRON', 'it'], ['VP', ['PP', ['ADP', 'from'], ['NP', ['NOUN', 'London'], ['NP', ['.', ','], ['NP+NOUN', 'England']]]], ['PP', ['PRT', 'to'], ['NP', ['NOUN', 'Plymouth'], ['NP', ['.', ','], ['NP+NOUN', 'England']]]]]]], ['.', '?']]]''')
+    infile = open('parse_dev.dat','r')
+    global rarewords
+    global trainwords
+    rarewords,trainwords = get_rarewords('parse_train.dat')
+    global nonterm_counts
+    global bin_counts
+    global un_counts
+    nonterm_counts,bin_counts,un_counts = counts_dic('parse_train.counts.out')
+    for i in range(len(lines)):
+        line = lines[i]
+        print line
+        pi,bp = cky(line)
+        res = bt(bp,1,len(line.split()),'SBARQ',line.split())
+        #print res
+        assert(str(res) == results[i])
+        print '--------------------------------------------------'
+    print 'done!'
+def test_backtrack():
     t0 = time.time()
     global nonterm_counts
     global bin_counts
     global un_counts
     nonterm_counts,bin_counts,un_counts = counts_dic('parse_train.counts.out')
+    
     line = 'What are geckos ?'
     line1 = 'How many miles is it from London , England to Plymouth , England ?'
     line2 = 'Where is Inoco based ?'
     line2 = 'Name the first private citizen to fly in space .'
-    #line = 'Who called ?'
     pi,bp = cky(line1)
     print bt(bp,1,len(line1.split()),'SBARQ',line1.split())
     t1 = time.time()
