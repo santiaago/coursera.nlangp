@@ -33,6 +33,7 @@ def memo(f):
     return _f
 
 def get_rarewords(inputfile):
+    'returns a filtered dictionary from an input json file and a dictionary with all words'
     wc = {}
     infile = open(inputfile,'r')
     for line in infile:
@@ -41,7 +42,7 @@ def get_rarewords(inputfile):
     return filter_by_count(wc),wc
 
 def replace_infrequent_words(inputfile,inputfile_srw):
-    
+    'from an input file gets all rare words and write in the outpute with _RARE_ tag instead of rare words'
     wc = {}
     infile = open(inputfile,'r')
     for line in infile:
@@ -59,6 +60,7 @@ def replace_infrequent_words(inputfile,inputfile_srw):
         outfile.write(str(new_tree).replace("'","\"")+'\n')
 
 def word_count(tree,wc):
+    'from a json tree updates the wordcount dictionary accordingly'
     if len(tree) == 2: # unary rule
         rule = tree[1]
         if type(rule) == list:
@@ -70,6 +72,7 @@ def word_count(tree,wc):
         word_count(tree[2],wc)
 
 def word_replace(tree,wc):
+    'from a json tree updates the word count dictionary with _RARE_ tags when needed'
     if len(tree) == 2: # unary rule
         rule = tree[1]
         if type(rule) == list:
@@ -84,21 +87,25 @@ def word_replace(tree,wc):
     return tree
 
 def word_update(wc,w):
+    'increment the count of a specific word in the word count dictionary'
     if w in wc:
         wc[w] += 1
     else:
         wc[w] = 1
 def filter_by_count(wc):
+    'from a word count dictionary returns new dictionary with only words that have counts less than 5'
     filter_wc = {}
     for w in wc:
         if wc[w] < 5:
             filter_wc[w] = wc[w]
     return filter_wc
 def print_dict(d):
+    'full print routine for a dictionary'
     for k in d:
         if d[k] != 0:
             print '%s: %s'%(k,d[k])
 def print_dict_ex(d,i,j):
+    'print from a dictionary filtering by key (k,i,j)'
     for k in d:
         if d[k] != 0:
             a,b,c = k
@@ -106,7 +113,7 @@ def print_dict_ex(d,i,j):
                 print '%s: %s'%(k,d[k])
 
 def convert(input):
-    '''from so: 
+    '''from so to encode json input in uft-8: 
     http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python'''
     if isinstance(input, dict):
         return {convert(key): convert(value) for key, value in input.iteritems()}
@@ -118,12 +125,16 @@ def convert(input):
         return input
 @memo
 def q_br(br):
+    'routing to calculate the q parameter for binary rules'
     X = br[0]
-    return float(bin_counts[br])/(float(nonterm_counts[X])*1.0)
+    #return float(bin_counts[br])/(float(nonterm_counts[X])*1.0)
+    return log(float(bin_counts[br])/(float(nonterm_counts[X])*1.0))
 @memo
 def q_ur(ur):
+    
     X = ur[0]
-    return float(un_counts[ur])/(float(nonterm_counts[X])*1.0)
+    #return float(un_counts[ur])/(float(nonterm_counts[X])*1.0)
+    return log(float(un_counts[ur])/(float(nonterm_counts[X])*1.0))
 
 def counts_dic(countfilename):
     counts = {}
@@ -148,7 +159,7 @@ def cky(sentence):
     for i in range(1,n+1):
         word = x[i-1]
         for X in nonterm_counts:
-            q = 0#float('-inf')
+            q = float('-inf')#0
             key = (i,i,X)
             
             if (word in rarewords) or (word not in trainwords):
@@ -184,8 +195,8 @@ def cky(sentence):
                         Y = r[1]
                         Z = r[2]
                         if ((i,s,Y) in pi ) and ((s+1,j,Z) in pi):
-                            v = q_br(r)*pi[(i,s,Y)]*pi[(s+1,j,Z)]
-                            #v = q_br(r) + pi[(i,s,Y)] + pi[(s+1,j,Z)]
+                            #v = q_br(r)*pi[(i,s,Y)]*pi[(s+1,j,Z)]
+                            v = q_br(r) + pi[(i,s,Y)] + pi[(s+1,j,Z)]
                             values.append(v)
                             arg_values[(s,r)] = v 
                 if len(values) > 0:
@@ -259,12 +270,12 @@ def part2():
     outfile = open('parse_test.p2.out','w')
     global rarewords
     global trainwords
-    rarewords,trainwords = get_rarewords('parse_train.dat')#'parse_dev.key')
+    rarewords,trainwords = get_rarewords('parse_train.dat')
     global nonterm_counts
     global bin_counts
     global un_counts
     nonterm_counts,bin_counts,un_counts = counts_dic('parse_train.counts.out')
-    # this gets up your score but agains the rules I believe ^^
+    # this gets up your score by doing some 'finesse' on unary rules
     #a,b,u = counts_dic('cfg.counts')
     #un_counts.update(u)
     count = 0
@@ -272,6 +283,41 @@ def part2():
         pi,bp = cky(line)
         res = None
         res = bt(bp,1,len(line.split()),'SBARQ',line.split())
+        outfile.write(str(res).replace("'","\"")+'\n')
+        count = count + 1
+        print count
+    print 'finnish!'
+
+def part3():
+    #infile = open('parse_dev.dat','r')
+    infile = open('parse_test.dat','r')
+    #outfile = open('parse_dev.p3.out','w')
+    outfile = open('parse_test.p3.out','w')
+    global rarewords
+    global trainwords
+    rarewords,trainwords = get_rarewords('parse_train_vert.dat')
+    global nonterm_counts
+    global bin_counts
+    global un_counts
+    nonterm_counts,bin_counts,un_counts = counts_dic('parse_train.counts.out')
+    a,b,u = counts_dic('cfg.counts')
+    un_counts.update(u)
+    count = 0
+    for line in infile:
+        pi,bp = cky(line)
+        res = None
+        try:
+            a = pi[(1,len(line.split()),'SBARQ')]
+            b = pi[(1,len(line.split()),'S')]
+            m = max((a,b))
+            if m == a:
+                res = bt(bp,1,len(line.split()),'SBARQ',line.split())
+            elif m == b:
+                res = bt(bp,1,len(line.split()),'S',line.split())
+            else:
+                res = bt(bp,1,len(line.split()),'SBAR',line.split())
+        except:
+            res = bt(bp,1,len(line.split()),'SBARQ',line.split())
         outfile.write(str(res).replace("'","\"")+'\n')
         count = count + 1
         print count
