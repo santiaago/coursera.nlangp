@@ -301,7 +301,17 @@ def part3():
     count = 0
     for line in infile:
         pi,bp = cky(line)
-        res = bt(bp,1,len(line.split()),'SBARQ',line.split())
+        res = None
+        try:
+            a = pi[(1,len(line.split()),'SBARQ')]
+            b = pi[(1,len(line.split()),'S')]
+            m = max(a,b)
+            if m == a:
+                res = bt(bp,1,len(line.split()),'SBARQ',line.split())
+            else:
+                res = bt(bp,1,len(line.split()),'S',line.split())
+        except:
+            res = bt(bp,1,len(line.split()),'SBARQ',line.split())
         outfile.write(str(res).replace("'","\"")+'\n')
         count = count + 1
         print count
