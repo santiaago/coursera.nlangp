@@ -261,7 +261,8 @@ def get_unrules(X):
 def part1():
     #replace_infrequent_words('tree.example','tree.example.out')
     #replace_infrequent_words('parse_dev.key','parse_dev_srw.key')
-    replace_infrequent_words('parse_train.dat','parse_train_srw.dat')
+    #replace_infrequent_words('parse_train.dat','parse_train_srw.dat')
+    replace_infrequent_words('parse_train_vert.dat','parse_train_vert_srw.dat')
 
 def part2():
     #infile = open('parse_dev.dat','r')
@@ -275,9 +276,6 @@ def part2():
     global bin_counts
     global un_counts
     nonterm_counts,bin_counts,un_counts = counts_dic('parse_train.counts.out')
-    # this gets up your score by doing some 'finesse' on unary rules
-    #a,b,u = counts_dic('cfg.counts')
-    #un_counts.update(u)
     count = 0
     for line in infile:
         pi,bp = cky(line)
@@ -299,25 +297,11 @@ def part3():
     global nonterm_counts
     global bin_counts
     global un_counts
-    nonterm_counts,bin_counts,un_counts = counts_dic('parse_train.counts.out')
-    a,b,u = counts_dic('cfg.counts')
-    un_counts.update(u)
+    nonterm_counts,bin_counts,un_counts = counts_dic('parse_train_vert.counts.out')
     count = 0
     for line in infile:
         pi,bp = cky(line)
-        res = None
-        try:
-            a = pi[(1,len(line.split()),'SBARQ')]
-            b = pi[(1,len(line.split()),'S')]
-            m = max((a,b))
-            if m == a:
-                res = bt(bp,1,len(line.split()),'SBARQ',line.split())
-            elif m == b:
-                res = bt(bp,1,len(line.split()),'S',line.split())
-            else:
-                res = bt(bp,1,len(line.split()),'SBAR',line.split())
-        except:
-            res = bt(bp,1,len(line.split()),'SBARQ',line.split())
+        res = bt(bp,1,len(line.split()),'SBARQ',line.split())
         outfile.write(str(res).replace("'","\"")+'\n')
         count = count + 1
         print count
