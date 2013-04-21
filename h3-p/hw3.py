@@ -81,8 +81,9 @@ def model1(filename_f, filename_e,S = 5):
                     print j
                     ejk = sentence_e[j]
                     sumt = 0
-                    for m in range(lk):
-                        sumt += t[fik][ejk]
+                    for m in range(lk+1):
+                        emk = sentence_e[m]
+                        sumt += t[fik][emk]
                     delta[(k,i,j)] = t[fik][ejk]/sumt
                     if (ejk,fik) not in c:
                         c[(ejk,fik)] = 0
@@ -103,7 +104,7 @@ def model1(filename_f, filename_e,S = 5):
         # set t(f|e) = c(e,f)/c(e)
         for w_en in words.keys():
             for w_f in words[w_en]:
-                t[w_f][w_en] = c[(w_en,w_f)]/float(count[w_en])
+                t[w_f][w_en] = c[(w_en,w_f)]/float(c[(w_en,)])
         print_t(t)
         print_c(c)
         raw_input()
