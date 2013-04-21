@@ -55,20 +55,58 @@ def model1(filename_f, filename_e,S = 5):
             t[w_f][w_en] = 1/float(count[w_en])
     print_t(t)
     
-
-    '''for s in range(1,S+1):
+    c = {}
+    delta = {}
+    for s in range(1,S+1):
+        print
+        print 'iteration #%s'%s
         #set counts to 0
+        c = {}
         for k in range(1,n+1):
             # mk lenght of foreign sentence
-            mk = f[k-1]
+            mk = len(f[k-1].split())
+            print f[k-1]
+            print mk
+            sentence_f = f[k-1].split()
             for i in range(1,mk+1):
                 # lk is the length of the english sentence
-                lk = e[k-1]
+                lk = len(e[k-1].split())
+                sentence_e = ['NULL']+e[k-1].split()
+                print e[k-1]
+                print lk
                 for j in range(0,lk+1):
                     # delta
-                    #counts
-                    pass
-        # set t(f|e) = c(e,f)/c(e)'''
+                    fik = sentence_f[i-1]
+                    print sentence_e
+                    print j
+                    ejk = sentence_e[j]
+                    sumt = 0
+                    for m in range(lk):
+                        sumt += t[fik][ejk]
+                    delta[(k,i,j)] = t[fik][ejk]/sumt
+                    if (ejk,fik) not in c:
+                        c[(ejk,fik)] = 0
+                    c[(ejk,fik)] += delta[(k,i,j)]
+                    if (ejk,) not in c:
+                        c[(ejk,)] = 0
+                    c[(ejk,)] += delta[(k,i,j)]
+                    if j not in c:
+                        c[(j,)]= {}
+                        c[(j,)][(i,lk,mk)] = 0 
+                    else:
+                        if (i,lk,mk) not in c[j]:
+                            c[(j,)][(i,lk,mk)] = 0 
+                    c[(j,)][(i,lk,mk)] += delta[(k,i,j)]
+                    if (i,lk,mk) not in c:
+                        c[(i,lk,mk)] = 0
+                    c[(i,lk,mk)] += delta[(k,i,j)]
+        # set t(f|e) = c(e,f)/c(e)
+        for w_en in words.keys():
+            for w_f in words[w_en]:
+                t[w_f][w_en] = c[(w_en,w_f)]/float(count[w_en])
+        print_t(t)
+        print_c(c)
+        raw_input()
 def print_dict(d):
     'print dictionary'
     print '------------------------------'
@@ -89,6 +127,12 @@ def print_t(t):
     for es in t.keys():
         for en in t[es]:
             print '\tt(%s | %s): %s'%(es,en,t[es][en])
+def print_c(c):
+    'print c dictionary'
+    print '------------------------------'
+    print 'c dictionary'
+    for k in c.keys():
+        print '\tc(%s): %s'%(k,c[k])
 def part1():
     #model1('corpus.es','corpus.en', 5)
     model1('example.es','example.en', 2)
