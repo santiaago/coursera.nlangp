@@ -215,6 +215,15 @@ def model2(filename_f, filename_e,t,S = 5):
             print_c(c)
     return t
 
+def growing_alignments(t_fe, t_ef):
+    '''
+    1. Estimate IBM model 2 for p(f | e).
+    2. Estimate IBM model 2 for p(e | f) (*reverse).
+    3. Calculate the best alignments with p(f | e) and p(e | f).
+    4. Calculate the intersection and union of these alignments.
+    5. Starting from the intersection, apply a heuristic to grow the alignment.
+    '''
+
 
 def alignments(t,filename_f,filename_e):
     print 'alignments'
@@ -237,8 +246,44 @@ def alignments(t,filename_f,filename_e):
         align.append(current_align)
 
     if False:
-        print_alignments(align)
+        print_align(align)
     return align
+
+def alignments_intersection(a1,a2):
+    '''creates an intersection of alignments from two alignments
+    they are supposed to have the same size
+    '''
+    a = []
+    for i in range(len(a1)):
+        curr_align = []
+        for j in range(len(a1[i])):
+            # calculate intersection
+            inter = tuple()
+            w1 = a1[i][j]
+            w2 = a2[i][j]
+            if w1 == w2:
+                inter = w1
+            curr_align.append(inter)
+        a.append(curr_align)
+    
+    return a
+
+def alignments_union(a1,a2):
+    '''creates a union of alignments from two alignments'''
+    a = []
+    for i in range(len(a1)):
+        curr_align = []
+        for j in range(len(a1[i])):
+            w1 = a1[i][j]
+            w2 = a2[i][j]
+            if w1 != w2:
+                union = [w1,w2]
+                curr_align.append(union)
+            else:
+                curr_align.append(w1)
+        a.append(curr_align)
+    
+    return a
 
 def print_dict(d):
     'print dictionary'
@@ -266,12 +311,15 @@ def print_c(c):
     print 'c dictionary'
     for k in c.keys():
         print '\tc(%s): %s'%(k,c[k])
-def print_alignments(a):
-    for i in a:
-        s = ''
-        for j in i:
-            s += ' '+str(j)
-        print s
+
+def print_align(a):
+    for i in range(len(a)):
+        for j in a[i]:
+            if len(j)==0:
+                print '%s NULL NULL'%(i+1)
+            else:
+                print '%s %s %s'%(i+1,j[0],j[1])
+
 def dump_t(filename,t):
     print 'dumping'
     out = codecs.open(filename, "w", "utf-8")
@@ -279,6 +327,7 @@ def dump_t(filename,t):
         for e in t[f]:
             s = '%s %s %s\n'%(f,e,t[f][e])
             out.write(s)
+
 def read_t(filename):
     print 'reading file %s to get t'%(filename)
     t = defaultdict()
@@ -293,6 +342,24 @@ def read_t(filename):
         t[foreign][english] = p
     return t
 
+def read_align(filename):
+    print '\nread align file %s'%filename
+    a = []
+    alignfile = codecs.open(filename, "r", 'utf-8').readlines()
+    current_index = -1
+    for line in alignfile:
+        split = line.split()
+        index = int(split[0])
+        e = int(split[1])
+        f = int(split[2])
+
+        if index != current_index:
+            current_index = index
+            a.append([])
+        a[current_index-1].append((e,f))
+
+    return a
+        
 def dump_align(filename,alignment):
     print '\nalignments'
     out = codecs.open(filename, "w", "utf-8")
@@ -308,6 +375,7 @@ def test_part1():
     print
     dump_t('example.t.out',t)
     alignments(t,'example.es','example.en')
+
 def part1():
     #t = model1('corpus.es','corpus.en', 5)
 
@@ -329,7 +397,31 @@ def part2():
 
     a = alignments(t,'test.es','test.en')
     dump_align('alignment_test.p2.out',a)
+
 def part3():
-    pass
+    t_fe = read_t('corpus.t5.p2.out')
+    t_ef = read_t('corpus.t5reverse.p2.out')
+    
+    a_fe = alignments(t_fe, 'dev.es','dev.en')
+    a_ef = alignments(t_ef, 'dev.en','dev.es')
+    #a_fe = alignments(t_fe, 'test.es','test.en')
+    #a_ef = alignments(t_ef, 'test.en','test.es')
+    
+    a_inter = alignments_intersection(a_fe,a_ef)
+    a_union = alignments_union(a_fe,a_ef)
+    
 def tests():
-    pass
+    a1 = read_align('alignment_dev.p2.out')
+    a2 = read_align('alignment_test.p2.out')
+    
+    a_inter = alignments_intersection(a1,a1)
+    print a_inter == a1
+    raw_input()
+    a_union = alignments_union(a1,a1)
+    print a_union == a1
+    raw_input()
+    print 'intersection'
+    print_align(a_inter)
+    print 'union'
+    print_align(a_union)
+
