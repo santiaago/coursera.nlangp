@@ -88,8 +88,11 @@ def model1(filename_f, filename_e,S = 5):
                     sumt = 0
                     for m in range(lk+1):
                         emk = sentence_e[m]
-                        sumt += t[fik][emk]
-                    delta = t[fik][ejk]/sumt
+                        if fik in t and emk in t[fik]:
+                            sumt += t[fik][emk]
+                    delta = 0
+                    if fik in t and ejk in t[fik] and sumt > 0:
+                        delta = t[fik][ejk]/sumt
                     if (ejk,fik) not in c:
                         c[(ejk,fik)] = 0
                     c[(ejk,fik)] += delta
@@ -112,7 +115,7 @@ def model1(filename_f, filename_e,S = 5):
                 t[w_f][w_en] = c[(w_en,w_f)]/float(c[(w_en,)])
         if DUMPALLITERATIONS:
             print '\ndumping iteration %s'%(s)
-            name = 'corpus.t_iteration%s.out'%(s)
+            name = 'corpus.t_reverse_iteration%s.out'%(s)
             dump_t(name,t)
         if VERBOSE:
             print_t(t)
@@ -173,9 +176,11 @@ def model2(filename_f, filename_e,t,S = 5):
                     sumqt = 0
                     for m in range(lk+1):
                         emk = sentence_e[m]
-                        sumqt += t[fik][emk]*q[m][(i,lk,mk)]
-
-                    delta = (t[fik][ejk]*q[j][(i,lk,mk)])/sumqt
+                        if fik in t and emk in t[fik]:
+                            sumqt += t[fik][emk]*q[m][(i,lk,mk)]
+                    delta = 0
+                    if fik in t and ejk in t[fik] and sumqt >0:
+                        delta = (t[fik][ejk]*q[j][(i,lk,mk)])/sumqt
 
                     # cs
                     if (ejk,fik) not in c:
@@ -377,40 +382,76 @@ def test_part1():
     alignments(t,'example.es','example.en')
 
 def part1():
+    #-1
+    #-- 5 iterations with model 1 and dump t on file
     #t = model1('corpus.es','corpus.en', 5)
-
     #dump_t('corpus.t5.p1.out',t)
+
+    #-- use dumped t file and get and dump alignments.
     #t = read_t('corpus.t.1.p1.out')
-    t = read_t('corpus.t_iteration2.out')
+    #t = read_t('corpus.t_iteration2.out')
     #a = alignments(t,'dev.es','dev.en')
-    a = alignments(t,'test.es','test.en')
-    dump_align('alignment_test.p1.out',a)
+    #a = alignments(t,'test.es','test.en')
+    #dump_align('alignment_test.p1.out',a)
     #dump_align('alignment_dev_4.p1.out',a)
+    
+    #-3
+    #-- 5 iterations with model 1 and dump t on file. 
+    #-- this time with english as foreign language
+    #t = model1('corpus.en','corpus.es',5)
+    #dump_t('corpus.t5reverse.p3.out',t)
+    pass
 
 def part2():
+    #-- 5 iterations starting with the t of model 1
+    #-- with model 2 and dump t on file
     #t = read_t('corpus.t_iteration2.out')
     #t = model2('corpus.es','corpus.en',t,5)
     #dump_t('corpus.t5.p2.out',t)
-    t = read_t('corpus.t5.p2.out')
+    
+    #-- use dumped t file from model 2 to work and dumpl alignments 
+    #t = read_t('corpus.t5.p2.out')
+
     #a = alignments(t,'dev.es','dev.en')
     #dump_align('alignment_dev.p2.out',a)
 
-    a = alignments(t,'test.es','test.en')
-    dump_align('alignment_test.p2.out',a)
+    #a = alignments(t,'test.es','test.en')
+    #dump_align('alignment_test.p2.out',a)
+
+    # 3
+    #-- 5 iterations starting with the t of model 1
+    #-- with model 2 and dump t on file
+    print 'reading'
+    t = read_t('corpus.t_reverse_iteration2.out')
+    print 'done!'
+    print 'model2'
+    t = model2('corpus.en','corpus.es',t,5)
+    print 'done!'
+    print 'dumping t'    
+    dump_t('corpus.t5reverse.p2.out',t)
+    print 'done!'
 
 def part3():
+    #-- get t params from model 2 for 
+    #-- english - spanish
+    #-- spanish - english
     t_fe = read_t('corpus.t5.p2.out')
     t_ef = read_t('corpus.t5reverse.p2.out')
     
+    #-- get alignments from file and t
     a_fe = alignments(t_fe, 'dev.es','dev.en')
     a_ef = alignments(t_ef, 'dev.en','dev.es')
+    dump_align('alignment_fe_dev.p3',a_fe)
+    dump_align('alignment_ef_dev.p3',a_ef)
     #a_fe = alignments(t_fe, 'test.es','test.en')
     #a_ef = alignments(t_ef, 'test.en','test.es')
     
-    a_inter = alignments_intersection(a_fe,a_ef)
-    a_union = alignments_union(a_fe,a_ef)
+    #-- get intersection and union from previous alignments
+    #a_inter = alignments_intersection(a_fe,a_ef)
+    #a_union = alignments_union(a_fe,a_ef)
     
 def tests():
+    print 'testing alignments'
     a1 = read_align('alignment_dev.p2.out')
     a2 = read_align('alignment_test.p2.out')
     
