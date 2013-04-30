@@ -195,8 +195,8 @@ def cky(sentence):
                         Y = r[1]
                         Z = r[2]
                         if ((i,s,Y) in pi ) and ((s+1,j,Z) in pi):
-                            #v = q_br(r)*pi[(i,s,Y)]*pi[(s+1,j,Z)]
-                            v = q_br(r) + pi[(i,s,Y)] + pi[(s+1,j,Z)]
+                            #v = q_br(r)*pi[(i,s,Y)]*pi[(s+1,j,Z)] #normal
+                            v = q_br(r) + pi[(i,s,Y)] + pi[(s+1,j,Z)] #log
                             values.append(v)
                             arg_values[(s,r)] = v 
                 if len(values) > 0:

@@ -216,6 +216,9 @@ def model2(filename_f, filename_e,t,S = 5):
 
 def alignments(t,filename_f,filename_e):
     print 'alignments'
+    print 'foreign file name: %s'%filename_f
+    print 'native file name: %s'%filename_e
+
     f = codecs.open(filename_f, "r", "utf-8").readlines()
     e = codecs.open(filename_e, "r", "utf-8").readlines()
 
@@ -236,7 +239,7 @@ def alignments(t,filename_f,filename_e):
 
     return align
 
-def alignments_growing(t_fe,t_ef, filename_f,filename_e):#, a_inter, a_union):
+def alignments_growing(t_fe,t_ef, filename_f,filename_e):
     '''
     1. Estimate IBM model 2 for p(f | e).
     2. Estimate IBM model 2 for p(e | f) (*reverse).
@@ -375,7 +378,6 @@ def part1():
     #dump_t('corpus.t5.p1.out',t)
 
     #-- use dumped t file and get and dump alignments.
-    #t = read_t('corpus.t.1.p1.out')
     #t = read_t('corpus.t_iteration2.out')
     #a = alignments(t,'dev.es','dev.en')
     #a = alignments(t,'test.es','test.en')
