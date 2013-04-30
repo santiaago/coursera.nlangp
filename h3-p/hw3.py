@@ -234,8 +234,6 @@ def alignments(t,filename_f,filename_e):
             current_align.append((e_line.index(max_e)+1,f_line.index(max_f)+1))
         align.append(current_align)
 
-    if False:
-        print_align(align)
     return align
 
 def alignments_growing(t_fe,t_ef, filename_f,filename_e):#, a_inter, a_union):
@@ -265,83 +263,34 @@ def alignments_growing(t_fe,t_ef, filename_f,filename_e):#, a_inter, a_union):
                 arg_values_ef[(e_word,f_word)] = t_ef[e_word][f_word]
             max_f_fe,max_e_fe = max(arg_values_fe,key = arg_values_fe.get)
             max_f_ef,max_e_ef = max(arg_values_ef,key = arg_values_ef.get)
-            if(max_f_fe == max_e_ef and max_e_fe == max_f_ef):#intersection
+            #intersection
+            if(max_f_fe == max_e_ef and max_e_fe == max_f_ef):
                 current_align.append((e_line.index(max_e_fe)+1,f_line.index(max_f_fe)+1))
-            else:#max from union
+            #max of union
+            else:
                 m1 = arg_values_fe[(max_f_fe,max_e_fe)]
                 m2 = arg_values_ef[(max_f_ef,max_e_ef)]
                 if m1 >= m2:
                     current_align.append((e_line.index(max_e_fe)+1,f_line.index(max_f_fe)+1))
                 else:
                     current_align.append((e_line.index(max_f_ef)+1,f_line.index(max_e_ef)+1))
-            #current_align.append((e_line.index(max_e)+1,f_line.index(max_f)+1))
         align.append(current_align)
 
-    if False:
-        print_align(align)
     return align
-    
-
-def alignments_intersection(a1,a2):
-    '''creates an intersection of alignments from two alignments
-    they are supposed to have the same size
-    '''
-    a = []
-    for i in range(len(a1)):
-        curr_align = []
-        for j in range(len(a1[i])):
-            # calculate intersection
-            inter = tuple()
-            if j <=len(a1[i]) and j <len(a2[i]):
-                w1 = a1[i][j]
-                w2 = a2[i][j]
-                if w1 == w2:
-                    inter = w1
-                    curr_align.append(inter)
-        a.append(curr_align)
-    
-    return a
-
-def alignments_union(a1,a2):
-    '''creates a union of alignments from two alignments'''
-    a = []
-    for i in range(len(a1)):
-        curr_align = []
-        for j in range(len(a1[i])):
-            w1 = a1[i][j]
-            w2 = None
-            if j < len(a2[i]):
-                w2 = a2[i][j]
-            if w1 != w2:
-                union = []
-                if w2 is None:
-                    union = [w1]
-                else:
-                    union = [w1,w2]
-                curr_align.append(union)
-            else:
-                curr_align.append([w1])
-        for j in range(len(a1[i]),len(a2[i])):
-            w2 = a2[i][j]
-            union = [w2]
-            curr_align.append(union)
-        a.append(curr_align)
-    
-    return a
 
 def print_dict(d):
     'print dictionary'
     print '------------------------------'
     print 'print dictionary'
     for k in d:
-        print 'd(%s): %s'%(k,d[k])
+        print '\td(%s): %s'%(k,d[k])
     
 def print_counts(count):
     'print count dictionary'
     print '------------------------------'
     print 'count dictionary'
     for c in count:
-        print 'c(%s): %s'%(c,count[c])
+        print '\tc(%s): %s'%(c,count[c])
 def print_t(t):
     'print t dictionary'
     print '------------------------------'
@@ -355,7 +304,6 @@ def print_c(c):
     print 'c dictionary'
     for k in c.keys():
         print '\tc(%s): %s'%(k,c[k])
-
 def print_align(a):
     for i in range(len(a)):
         for j in a[i]:
@@ -432,7 +380,7 @@ def part1():
     #a = alignments(t,'dev.es','dev.en')
     #a = alignments(t,'test.es','test.en')
     #dump_align('alignment_test.p1.out',a)
-    #dump_align('alignment_dev_4.p1.out',a)
+    #dump_align('alignment_dev.p1.out',a)
     
     #-3
     #-- 5 iterations with model 1 and dump t on file. 
@@ -460,15 +408,16 @@ def part2():
     # 3
     #-- 5 iterations starting with the t of model 1
     #-- with model 2 and dump t on file
-    print 'reading'
-    t = read_t('corpus.t_reverse_iteration2.out')
-    print 'done!'
-    print 'model2'
-    t = model2('corpus.en','corpus.es',t,5)
-    print 'done!'
-    print 'dumping t'    
-    dump_t('corpus.t5reverse.p2.out',t)
-    print 'done!'
+    #print 'reading'
+    #t = read_t('corpus.t_reverse_iteration2.out')
+    #print 'done!'
+    #print 'model2'
+    #t = model2('corpus.en','corpus.es',t,5)
+    #print 'done!'
+    #print 'dumping t'    
+    #dump_t('corpus.t5reverse.p2.out',t)
+    #print 'done!'
+    pass
 
 def part3():
     #-- get t params from model 2 for 
@@ -477,10 +426,10 @@ def part3():
     t_fe = read_t('corpus.t5.p2.out')
     t_ef = read_t('corpus.t5reverse.p2.out')
     
-    #a = alignments_growing(t_fe,t_ef,'dev.es','dev.en')
-    #dump_align('alignment_fe_dev2.p3',a)
-    a = alignments_growing(t_fe,t_ef,'test.es','test.en')
-    dump_align('alignment_test.p3.out',a)
+    a = alignments_growing(t_fe,t_ef,'dev.es','dev.en')
+    dump_align('alignment_dev.p3.out',a)
+    #a = alignments_growing(t_fe,t_ef,'test.es','test.en')
+    #dump_align('alignment_test.p3.out',a)
     
 def tests():
     pass
