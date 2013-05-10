@@ -436,3 +436,6 @@ def part3():
 def tests():
     pass
 
+def hello():
+
+    
